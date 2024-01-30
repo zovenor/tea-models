@@ -13,7 +13,7 @@ const (
 	DownKey    = "down"
 	ForwardKey = "right"
 	BackKey    = "left"
-	FindKey    = "ctrl+f"
+	FindKey    = "f"
 	EditKey    = "ctrl+e"
 	EnterKey   = "enter"
 	ExitKey    = "ctrl+c"
