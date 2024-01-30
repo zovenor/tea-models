@@ -39,6 +39,8 @@ func GetHints(keys ...string) string {
 			k = "space"
 		case CancelKey:
 			d = "to cancel"
+		case ConfirmKey:
+			d = "to confirm"
 		}
 		if k == "" {
 			k = key

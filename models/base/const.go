@@ -17,4 +17,5 @@ const (
 	ExitKey    = "ctrl+c"
 	SelectKey  = " "
 	CancelKey  = "esc"
+	ConfirmKey = "y"
 )
