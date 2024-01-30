@@ -1,16 +1,22 @@
 package base
 
 const (
-	CURSOR_SYMBOL = ">"
+	CursorSymbol = ">"
 )
 
 const (
-	UP_KEY      = "up"
-	DOWN_KEY    = "down"
-	FORWARD_KEY = "right"
-	BACK_KEY    = "left"
-	FIND_KEY    = "ctrl+f"
-	EDIT_KEY    = "ctrl+e"
-	ENTER_KEY   = "enter"
-	EXIT_KEY    = "ctrl+c"
+	TerminalWidth = 200
+)
+
+const (
+	UpKey      = "up"
+	DownKey    = "down"
+	ForwardKey = "right"
+	BackKey    = "left"
+	FindKey    = "ctrl+f"
+	EditKey    = "ctrl+e"
+	EnterKey   = "enter"
+	ExitKey    = "ctrl+c"
+	SelectKey  = " "
+	CancelKey  = "esc"
 )
