@@ -31,7 +31,12 @@ func NewListItemsModel(
 	selectMode bool,
 	returnValue bool,
 	parentPath string,
-	parent tea.Model) *ListItemsModel {
+	parent tea.Model,
+	maxItemsInPage int,
+) (*ListItemsModel, error) {
+	if maxItemsInPage < 1 {
+		return nil, fmt.Errorf("maxItemsInPage should be more than 0")
+	}
 	return &ListItemsModel{
 		name:        name,
 		selectMode:  selectMode,
@@ -40,8 +45,9 @@ func NewListItemsModel(
 
 		parent: parent,
 
-		cursorSymbol: base.CursorSymbol,
-	}
+		cursorSymbol:   base.CursorSymbol,
+		maxItemsInPage: maxItemsInPage,
+	}, nil
 }
 
 type ListItemsModel struct {
@@ -59,6 +65,7 @@ type ListItemsModel struct {
 	findValue            string
 	findModel            *textinput.Model
 	findCursor           int
+	maxItemsInPage       int
 }
 
 func (lim *ListItemsModel) AddItem(name string, value interface{}) {
@@ -82,7 +89,7 @@ func (lim *ListItemsModel) View() string {
 
 	s += fmt.Sprintf("%v\n\n", lim.name)
 
-	for _, index := range lim.viewListItemsIndexed {
+	for _, index := range lim.getPageItemsIndexes() {
 
 		item, err := lim.getItemByIndex(index)
 		if err != nil {
@@ -121,6 +128,9 @@ func (lim *ListItemsModel) View() string {
 		s += base.GetHints(base.ExitKey, base.FindKey, base.SelectKey, base.EnterKey)
 	} else {
 		s += base.GetHints(base.ExitKey, base.EnterKey, base.CancelKey)
+	}
+	if lim.getPagesLen() > 0 {
+		s += fmt.Sprintf("Page %v/%v", lim.getPageIndex()+1, lim.getPagesLen())
 	}
 
 	return s
@@ -172,6 +182,30 @@ func (lim *ListItemsModel) nextIndex() {
 		lim.setCursorByFindCursor()
 	} else {
 		lim.setCursorByFindCursor()
+	}
+}
+
+func (lim *ListItemsModel) getPagesLen() int {
+	if len(lim.viewListItemsIndexed) < lim.maxItemsInPage {
+		return 1
+	}
+	return len(lim.viewListItemsIndexed)/lim.maxItemsInPage + 1
+}
+
+func (lim *ListItemsModel) getPageIndex() int {
+	if len(lim.viewListItemsIndexed) == 0 {
+		return 0
+	}
+	return lim.findCursor / lim.maxItemsInPage
+}
+
+func (lim *ListItemsModel) getPageItemsIndexes() []int {
+	if len(lim.viewListItemsIndexed) < lim.maxItemsInPage {
+		return lim.viewListItemsIndexed
+	} else if lim.getPageIndex()+1 < lim.getPagesLen() {
+		return lim.viewListItemsIndexed[lim.getPageIndex()*lim.maxItemsInPage : (lim.getPageIndex()+1)*lim.maxItemsInPage]
+	} else {
+		return lim.viewListItemsIndexed[lim.getPageIndex()*lim.maxItemsInPage:]
 	}
 }
 

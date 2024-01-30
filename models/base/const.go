@@ -1,12 +1,10 @@
 package base
 
-const (
-	CursorSymbol = ">"
-)
+const CursorSymbol = ">"
 
-const (
-	TerminalWidth = 200
-)
+const MaxItemsInPage = 20
+
+const TerminalWidth = 200
 
 const (
 	UpKey      = "up"

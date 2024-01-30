@@ -8,8 +8,11 @@ import (
 )
 
 func main() {
-	items := []string{"Name", "Email", "Address"}
-	model := models.NewListItemsModel("Fields", false, false, "Base model", nil)
+	items := []string{
+		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
+		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
+	}
+	model, _ := models.NewListItemsModel("Fields", false, false, "Base model", nil, 20)
 	for _, item := range items {
 		model.AddItem(item, nil)
 	}
