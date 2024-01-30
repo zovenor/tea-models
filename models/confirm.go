@@ -6,27 +6,22 @@ import (
 	"github.com/zovenor/tea-models/models/base"
 )
 
-type ConfirmMsg struct {
-	Value   interface{}
-	Confirm bool
-}
-
 type ConfirmModel struct {
 	description string
-	value       interface{}
+	f           func()
 	parent      tea.Model
 }
 
 func (c *ConfirmModel) GetDescription() string { return c.description }
 
-func NewConfirmModel(description string, parent tea.Model, value interface{}) (*ConfirmModel, error) {
+func NewConfirmModel(description string, parent tea.Model, f func()) (*ConfirmModel, error) {
 	if parent == nil {
 		return nil, fmt.Errorf("parent is nil")
 	}
 	return &ConfirmModel{
 		description: description,
 		parent:      parent,
-		value:       value,
+		f:           f,
 	}, nil
 }
 
@@ -49,9 +44,10 @@ func (c *ConfirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case base.ExitKey:
 			return c, tea.Quit
 		case base.ConfirmKey:
-			return c.parent.Update(ConfirmMsg{Value: c.value, Confirm: true})
+			c.f()
+			return c.parent, nil
 		case base.CancelKey:
-			return c.parent.Update(ConfirmMsg{Value: c.value, Confirm: false})
+			return c.parent, nil
 		}
 	}
 	return c, nil
