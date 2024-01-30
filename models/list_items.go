@@ -19,6 +19,13 @@ type ListItemModel struct {
 	selected bool
 }
 
+func (im *ListItemModel) GetName() string {
+	return im.name
+}
+
+func (im *ListItemModel) GetValue() interface{} {
+	return im.value
+}
 func NewListItemModel(name string, value interface{}) *ListItemModel {
 	return &ListItemModel{
 		name:  name,
