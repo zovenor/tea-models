@@ -9,7 +9,7 @@ import (
 
 func main() {
 	items := []string{"Name", "Email", "Address"}
-	model := models.NewListItemsModel("Fields", false, false, nil)
+	model := models.NewListItemsModel("Fields", false, false, "Base model", nil)
 	for _, item := range items {
 		model.AddItem(item, nil)
 	}

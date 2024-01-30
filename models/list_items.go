@@ -26,11 +26,17 @@ func NewListItemModel(name string, value interface{}) *ListItemModel {
 	}
 }
 
-func NewListItemsModel(name string, selectMode bool, returnValue bool, parent tea.Model) *ListItemsModel {
+func NewListItemsModel(
+	name string,
+	selectMode bool,
+	returnValue bool,
+	parentPath string,
+	parent tea.Model) *ListItemsModel {
 	return &ListItemsModel{
 		name:        name,
 		selectMode:  selectMode,
 		returnValue: returnValue,
+		parentPath:  parentPath,
 
 		parent: parent,
 
@@ -42,6 +48,7 @@ type ListItemsModel struct {
 	items       []*ListItemModel
 	selectMode  bool
 	returnValue bool
+	parentPath  string
 	name        string
 
 	cursor               int
@@ -68,6 +75,10 @@ func (lim *ListItemsModel) Init() tea.Cmd {
 
 func (lim *ListItemsModel) View() string {
 	var s string
+
+	if lim.parentPath != "" {
+		s += fmt.Sprintf("%v > ", lim.parentPath)
+	}
 
 	s += fmt.Sprintf("%v\n\n", lim.name)
 
