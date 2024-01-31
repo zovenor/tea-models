@@ -12,7 +12,9 @@ func main() {
 		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
 		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
 	}
-	model, _ := models.NewListItemsModel("Fields", false, false, "Base model", nil, 20)
+	model, _ := models.NewListItemsModel(
+		"Fields", false, false, "Base model", nil, 20, true,
+	)
 	for _, item := range items {
 		model.AddItem(item, nil)
 	}

@@ -40,6 +40,7 @@ func NewListItemsModel(
 	parentPath string,
 	parent tea.Model,
 	maxItemsInPage int,
+	indexes bool,
 ) (*ListItemsModel, error) {
 	if maxItemsInPage < 1 {
 		return nil, fmt.Errorf("maxItemsInPage should be more than 0")
@@ -54,15 +55,17 @@ func NewListItemsModel(
 
 		cursorSymbol:   base.CursorSymbol,
 		maxItemsInPage: maxItemsInPage,
+		indexes:        indexes,
 	}, nil
 }
 
 type ListItemsModel struct {
+	name        string
 	items       []*ListItemModel
 	selectMode  bool
 	returnValue bool
 	parentPath  string
-	name        string
+	indexes     bool
 
 	cursor               int
 	cursorSymbol         string
@@ -116,8 +119,10 @@ func (lim *ListItemsModel) View() string {
 				s += "[ ] "
 			}
 		}
-
-		s += fmt.Sprintf("%v) %v\n", index+1, item.name)
+		if lim.indexes {
+			s += fmt.Sprintf("%v) ", index)
+		}
+		s += fmt.Sprintf("%v\n", item.name)
 	}
 
 	if lim.findModel != nil {

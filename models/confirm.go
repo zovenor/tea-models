@@ -32,7 +32,7 @@ func (c *ConfirmModel) View() string {
 
 	s += c.description
 
-	base.GetHints(base.EditKey, base.ConfirmKey, base.CancelKey)
+	s += base.GetHints(base.ExitKey, base.ConfirmKey, base.CancelKey)
 
 	return s
 }
