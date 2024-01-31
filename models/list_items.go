@@ -41,7 +41,7 @@ type ListItemsConf struct {
 	Parent         tea.Model
 	MaxItemsInPage int
 	Indexes        bool
-	KeyValues      *map[string]interface{}
+	KeyValues      map[string]interface{}
 	CmdsF          []func(lim *ListItemsModel) tea.Cmd
 	UpdateF        *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 }
@@ -76,7 +76,7 @@ type ListItemsModel struct {
 	returnValue bool
 	parentPath  string
 	indexes     bool
-	keyValues   *map[string]interface{}
+	keyValues   map[string]interface{}
 	cmdsF       []func(lim *ListItemsModel) tea.Cmd
 	updateF     *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 
@@ -91,8 +91,17 @@ type ListItemsModel struct {
 	maxItemsInPage       int
 }
 
-func (lim *ListItemsModel) GetKeyValues() *map[string]interface{} {
+func (lim *ListItemsModel) GetKeyValues() map[string]interface{} {
 	return lim.keyValues
+}
+
+func (lim *ListItemsModel) GetValueByKey(key string) interface{} {
+	for k, v := range lim.keyValues {
+		if k == key {
+			return v
+		}
+	}
+	return nil
 }
 
 func (lim *ListItemsModel) AddItem(name string, value interface{}) {
