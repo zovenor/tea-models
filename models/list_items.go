@@ -179,7 +179,7 @@ func (lim *ListItemsModel) View() string {
 		s += base.GetHints(base.ExitKey, base.EnterKey, base.CancelKey)
 	}
 	if lim.getPagesLen() > 0 {
-		s += fmt.Sprintf("Page %v/%v", lim.getPageIndex()+1, lim.getPagesLen())
+		s += fmt.Sprintf("Page %v/%v. All items: %v", lim.getPageIndex()+1, lim.getPagesLen(), len(lim.viewListItemsIndexed))
 	}
 
 	return s
@@ -375,4 +375,8 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return lim, nil
+}
+
+func (lim *ListItemsModel) SetError(err error) {
+	lim.err = err
 }
