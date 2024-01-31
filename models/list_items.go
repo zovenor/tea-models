@@ -109,6 +109,10 @@ func (lim *ListItemsModel) AddItem(name string, value interface{}) {
 	lim.setCursorByFindCursor()
 }
 
+func (lim *ListItemsModel) GetItems() []*ListItemModel {
+	return lim.items
+}
+
 func (lim *ListItemsModel) SetItems(newItems []*ListItemModel) {
 	lim.items = newItems
 	lim.filterByName(lim.findValue)
