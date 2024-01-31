@@ -213,6 +213,8 @@ func (lim *ListItemsModel) filterByName(s string) {
 func (lim *ListItemsModel) setCursorByFindCursor() {
 	if len(lim.viewListItemsIndexed) == 0 {
 		lim.findCursor = 0
+		lim.cursor = 0
+		return
 	}
 	if lim.findCursor >= len(lim.viewListItemsIndexed) {
 		lim.findCursor = len(lim.viewListItemsIndexed) - 1
