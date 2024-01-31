@@ -65,7 +65,6 @@ func NewListItemsModel(listItemsConf ListItemsConf) (*ListItemsModel, error) {
 		cmdsF:          listItemsConf.CmdsF,
 		updateF:        listItemsConf.UpdateF,
 	}
-	lim.Init()
 	return lim, nil
 }
 
