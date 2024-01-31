@@ -96,8 +96,15 @@ func (lim *ListItemsModel) GetKeyValues() *map[string]interface{} {
 }
 
 func (lim *ListItemsModel) AddItem(name string, value interface{}) {
-	lim.viewListItemsIndexed = append(lim.viewListItemsIndexed, len(lim.items))
 	lim.items = append(lim.items, NewListItemModel(name, value))
+	lim.filterByName(lim.findValue)
+	lim.setCursorByFindCursor()
+}
+
+func (lim *ListItemsModel) SetItems(newItems []*ListItemModel) {
+	lim.items = newItems
+	lim.filterByName(lim.findValue)
+	lim.setCursorByFindCursor()
 }
 
 func (lim *ListItemsModel) SetCursorSymbol(cursorSymbol string) {
