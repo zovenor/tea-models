@@ -120,7 +120,7 @@ func (lim *ListItemsModel) View() string {
 			}
 		}
 		if lim.indexes {
-			s += fmt.Sprintf("%v) ", index)
+			s += fmt.Sprintf("%v) ", index+1)
 		}
 		s += fmt.Sprintf("%v\n", item.name)
 	}
