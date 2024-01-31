@@ -41,11 +41,14 @@ func NewListItemsModel(
 	parent tea.Model,
 	maxItemsInPage int,
 	indexes bool,
+	keyValues map[string]interface{},
+	cmdsF []func(lim *ListItemsModel) tea.Cmd,
+	updateF *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd),
 ) (*ListItemsModel, error) {
 	if maxItemsInPage < 1 {
 		return nil, fmt.Errorf("maxItemsInPage should be more than 0")
 	}
-	return &ListItemsModel{
+	lim := &ListItemsModel{
 		name:        name,
 		selectMode:  selectMode,
 		returnValue: returnValue,
@@ -56,7 +59,12 @@ func NewListItemsModel(
 		cursorSymbol:   base.CursorSymbol,
 		maxItemsInPage: maxItemsInPage,
 		indexes:        indexes,
-	}, nil
+		keyValues:      keyValues,
+		cmdsF:          cmdsF,
+		updateF:        updateF,
+	}
+	lim.Init()
+	return lim, nil
 }
 
 type ListItemsModel struct {
@@ -66,6 +74,9 @@ type ListItemsModel struct {
 	returnValue bool
 	parentPath  string
 	indexes     bool
+	keyValues   map[string]interface{}
+	cmdsF       []func(lim *ListItemsModel) tea.Cmd
+	updateF     *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 
 	cursor               int
 	cursorSymbol         string
@@ -87,7 +98,11 @@ func (lim *ListItemsModel) SetCursorSymbol(cursorSymbol string) {
 	lim.cursorSymbol = cursorSymbol
 }
 func (lim *ListItemsModel) Init() tea.Cmd {
-	return nil
+	cmds := make([]tea.Cmd, 0)
+	for _, cmdF := range lim.cmdsF {
+		cmds = append(cmds, cmdF(lim))
+	}
+	return tea.Batch(cmds...)
 }
 
 func (lim *ListItemsModel) View() string {
@@ -240,6 +255,13 @@ func (lim *ListItemsModel) getSelectedItemsMsg() ItemsMsg {
 }
 
 func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+
+	if lim.updateF != nil {
+		model, cmd := (*lim.updateF)(lim, msg)
+		if model != nil || cmd != nil {
+			return model, cmd
+		}
+	}
 
 	if lim.findModel == nil {
 		switch msg := msg.(type) {
