@@ -103,6 +103,9 @@ func (lim *ListItemsModel) GetValueByKey(key string) interface{} {
 	return nil
 }
 
+func (lim *ListItemsModel) SetKeyValueByKey(key string, value interface{}) {
+	lim.keyValues[key] = value
+}
 func (lim *ListItemsModel) AddItem(name string, value interface{}) {
 	lim.items = append(lim.items, NewListItemModel(name, value))
 	lim.filterByName(lim.findValue)
