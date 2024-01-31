@@ -33,35 +33,37 @@ func NewListItemModel(name string, value interface{}) *ListItemModel {
 	}
 }
 
-func NewListItemsModel(
-	name string,
-	selectMode bool,
-	returnValue bool,
-	parentPath string,
-	parent tea.Model,
-	maxItemsInPage int,
-	indexes bool,
-	keyValues map[string]interface{},
-	cmdsF []func(lim *ListItemsModel) tea.Cmd,
-	updateF *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd),
-) (*ListItemsModel, error) {
-	if maxItemsInPage < 1 {
+type ListItemsConf struct {
+	Name           string
+	SelectMode     bool
+	ReturnValue    bool
+	ParentPath     string
+	Parent         tea.Model
+	MaxItemsInPage int
+	Indexes        bool
+	KeyValues      *map[string]interface{}
+	CmdsF          []func(lim *ListItemsModel) tea.Cmd
+	UpdateF        *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
+}
+
+func NewListItemsModel(listItemsConf ListItemsConf) (*ListItemsModel, error) {
+	if listItemsConf.MaxItemsInPage < 1 {
 		return nil, fmt.Errorf("maxItemsInPage should be more than 0")
 	}
 	lim := &ListItemsModel{
-		name:        name,
-		selectMode:  selectMode,
-		returnValue: returnValue,
-		parentPath:  parentPath,
+		name:        listItemsConf.Name,
+		selectMode:  listItemsConf.SelectMode,
+		returnValue: listItemsConf.ReturnValue,
+		parentPath:  listItemsConf.ParentPath,
 
-		parent: parent,
+		parent: listItemsConf.Parent,
 
 		cursorSymbol:   base.CursorSymbol,
-		maxItemsInPage: maxItemsInPage,
-		indexes:        indexes,
-		keyValues:      keyValues,
-		cmdsF:          cmdsF,
-		updateF:        updateF,
+		maxItemsInPage: listItemsConf.MaxItemsInPage,
+		indexes:        listItemsConf.Indexes,
+		keyValues:      listItemsConf.KeyValues,
+		cmdsF:          listItemsConf.CmdsF,
+		updateF:        listItemsConf.UpdateF,
 	}
 	lim.Init()
 	return lim, nil
@@ -74,7 +76,7 @@ type ListItemsModel struct {
 	returnValue bool
 	parentPath  string
 	indexes     bool
-	keyValues   map[string]interface{}
+	keyValues   *map[string]interface{}
 	cmdsF       []func(lim *ListItemsModel) tea.Cmd
 	updateF     *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 
@@ -87,6 +89,10 @@ type ListItemsModel struct {
 	findModel            *textinput.Model
 	findCursor           int
 	maxItemsInPage       int
+}
+
+func (lim *ListItemsModel) GetKeyValues() *map[string]interface{} {
+	return lim.keyValues
 }
 
 func (lim *ListItemsModel) AddItem(name string, value interface{}) {

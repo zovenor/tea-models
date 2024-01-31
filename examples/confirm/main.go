@@ -8,9 +8,15 @@ import (
 )
 
 func main() {
-	listModel, _ := models.NewListItemsModel(
-		"Fields", false, false, "Base model", nil, 20, false,
-	)
+	listModel, _ := models.NewListItemsModel(models.ListItemsConf{
+		Name:           "Fields",
+		SelectMode:     false,
+		ReturnValue:    false,
+		ParentPath:     "Base model",
+		Parent:         nil,
+		MaxItemsInPage: 20,
+		Indexes:        false,
+	})
 	confirmModel, _ := models.NewConfirmModel(
 		"Do you want to do something?\n",
 		listModel, func() {

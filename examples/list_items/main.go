@@ -12,9 +12,16 @@ func main() {
 		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
 		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
 	}
-	model, _ := models.NewListItemsModel(
-		"Fields", false, false, "Base model", nil, 20, true,
-	)
+	listItemsConf := models.ListItemsConf{
+		Name:           "Fields",
+		SelectMode:     false,
+		ReturnValue:    false,
+		ParentPath:     "Base model",
+		Parent:         nil,
+		MaxItemsInPage: 20,
+		Indexes:        true,
+	}
+	model, _ := models.NewListItemsModel(listItemsConf)
 	for _, item := range items {
 		model.AddItem(item, nil)
 	}
