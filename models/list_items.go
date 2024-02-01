@@ -78,6 +78,7 @@ type ListItemsModel struct {
 	keyValues   map[string]interface{}
 	cmdsF       []func(lim *ListItemsModel) tea.Cmd
 	updateF     *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
+	view        *string
 
 	cursor               int
 	cursorSymbol         string
@@ -134,6 +135,9 @@ func (lim *ListItemsModel) Init() tea.Cmd {
 }
 
 func (lim *ListItemsModel) View() string {
+	if lim.view != nil {
+		return *lim.view
+	}
 	var s string
 
 	if lim.parentPath != "" {
@@ -385,4 +389,8 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (lim *ListItemsModel) SetError(err error) {
 	lim.err = err
+}
+
+func (lim *ListItemsModel) SetView(view *string) {
+	lim.view = view
 }
