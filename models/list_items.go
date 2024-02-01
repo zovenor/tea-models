@@ -89,6 +89,7 @@ type ListItemsModel struct {
 	findModel            *textinput.Model
 	findCursor           int
 	maxItemsInPage       int
+	keys                 []base.Key
 }
 
 func (lim *ListItemsModel) GetKeyValues() map[string]interface{} {
@@ -183,11 +184,17 @@ func (lim *ListItemsModel) View() string {
 		lim.err = nil
 	}
 
+	allKeys := make([]interface{}, 0)
+
 	if lim.findModel == nil {
-		s += base.GetHints(base.ExitKey, base.FindKey, base.SelectKey, base.EnterKey)
+		allKeys = append(allKeys, base.ExitKey, base.FindKey, base.SelectKey, base.EnterKey)
 	} else {
-		s += base.GetHints(base.ExitKey, base.EnterKey, base.CancelKey)
+		allKeys = append(allKeys, base.ExitKey, base.EnterKey, base.CancelKey)
 	}
+	for _, k := range lim.keys {
+		allKeys = append(allKeys, k)
+	}
+	s += base.GetHints(allKeys...)
 	if lim.getPagesLen() > 0 {
 		s += fmt.Sprintf("Page %v/%v. All items: %v", lim.getPageIndex()+1, lim.getPagesLen(), len(lim.viewListItemsIndexed))
 	}
@@ -393,4 +400,11 @@ func (lim *ListItemsModel) SetError(err error) {
 
 func (lim *ListItemsModel) SetView(view *string) {
 	lim.view = view
+}
+
+func (lim *ListItemsModel) SetNewKeyForView(key string, description string) {
+	lim.keys = append(lim.keys, base.Key{
+		Name:        key,
+		Description: description,
+	})
 }
