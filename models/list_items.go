@@ -408,3 +408,7 @@ func (lim *ListItemsModel) SetNewKeyForView(key string, description string) {
 		Description: description,
 	})
 }
+
+func (lim *ListItemsModel) GetCurrentItem() (*ListItemModel, error) {
+	return lim.getItemByIndex(lim.cursor)
+}
