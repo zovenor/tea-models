@@ -86,6 +86,7 @@ type ListItemsModel struct {
 	cursor               int
 	cursorSymbol         string
 	err                  error
+	status               string
 	parent               tea.Model
 	viewListItemsIndexed []int
 	findValue            string
@@ -138,6 +139,10 @@ func (lim *ListItemsModel) Init() tea.Cmd {
 	return tea.Batch(cmds...)
 }
 
+func (lim *ListItemsModel) SetStatus(status string) {
+	lim.status = status
+}
+
 func (lim *ListItemsModel) View() string {
 	if lim.view != nil {
 		return *lim.view
@@ -185,6 +190,13 @@ func (lim *ListItemsModel) View() string {
 		s += color.New(color.BgRed).Sprintf("error: %v", lim.err.Error())
 		s += "\n"
 		lim.err = nil
+	}
+
+	if lim.status != "" {
+		s += "\n"
+		s += color.New(color.BgBlue).Sprint(lim.status)
+		s += "\n"
+		lim.status = ""
 	}
 
 	allKeys := make([]interface{}, 0)
