@@ -37,6 +37,7 @@ type ListItemsConf struct {
 	Name           string
 	SelectMode     bool
 	ReturnValue    bool
+	FindMode       bool
 	ParentPath     string
 	Parent         tea.Model
 	MaxItemsInPage int
@@ -64,6 +65,7 @@ func NewListItemsModel(listItemsConf ListItemsConf) (*ListItemsModel, error) {
 		keyValues:      listItemsConf.KeyValues,
 		cmdsF:          listItemsConf.CmdsF,
 		updateF:        listItemsConf.UpdateF,
+		findMode:       listItemsConf.FindMode,
 	}
 	return lim, nil
 }
@@ -79,6 +81,7 @@ type ListItemsModel struct {
 	cmdsF       []func(lim *ListItemsModel) tea.Cmd
 	updateF     *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 	view        *string
+	findMode    bool
 
 	cursor               int
 	cursorSymbol         string
@@ -186,11 +189,18 @@ func (lim *ListItemsModel) View() string {
 
 	allKeys := make([]interface{}, 0)
 
-	if lim.findModel == nil {
-		allKeys = append(allKeys, base.ExitKey, base.FindKey, base.SelectKey, base.EnterKey)
-	} else {
-		allKeys = append(allKeys, base.ExitKey, base.EnterKey, base.CancelKey)
+	if lim.findMode {
+		if lim.findModel == nil {
+			allKeys = append(allKeys, base.FindKey)
+		} else {
+			allKeys = append(allKeys, base.CancelKey, base.EnterKey)
+		}
 	}
+	if lim.selectMode {
+		allKeys = append(allKeys, base.SelectKey)
+	}
+
+	allKeys = append(allKeys, base.ExitKey)
 	for _, k := range lim.keys {
 		allKeys = append(allKeys, k)
 	}
@@ -210,7 +220,7 @@ func (lim *ListItemsModel) getItemByIndex(index int) (*ListItemModel, error) {
 	}
 }
 
-func (lim *ListItemsModel) getParent() (tea.Model, error) {
+func (lim *ListItemsModel) GetParent() (tea.Model, error) {
 	if lim.parent == nil {
 		return nil, fmt.Errorf("parent is nil")
 	}
@@ -326,7 +336,7 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return lim, nil
 				}
 			case base.BackKey:
-				parent, err := lim.getParent()
+				parent, err := lim.GetParent()
 				if err != nil {
 					lim.err = err
 					return lim, nil
@@ -334,7 +344,7 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return parent.Update(nil)
 			case base.EnterKey:
 				if lim.returnValue {
-					parent, err := lim.getParent()
+					parent, err := lim.GetParent()
 					if err != nil {
 						lim.err = err
 						return lim, nil
@@ -361,11 +371,13 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					neededItem.selected = !neededItem.selected
 				}
 			case base.FindKey:
-				ti := textinput.New()
-				ti.Placeholder = lim.findValue
-				ti.SetValue(lim.findValue)
-				ti.Focus()
-				lim.findModel = &ti
+				if lim.findMode {
+					ti := textinput.New()
+					ti.Placeholder = lim.findValue
+					ti.SetValue(lim.findValue)
+					ti.Focus()
+					lim.findModel = &ti
+				}
 			case base.ExitKey:
 				return lim, tea.Quit
 			}
