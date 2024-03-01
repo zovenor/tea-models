@@ -20,8 +20,12 @@ type ListItemModel struct {
 	selected bool
 }
 
-func (lim *ListItemModel) SetGroup(group string) {
-	lim.group = group
+func (im *ListItemModel) SetGroup(group string) {
+	im.group = group
+}
+
+func (im *ListItemModel) GetGroup() string {
+	return im.group
 }
 
 func (im *ListItemModel) GetName() string {
