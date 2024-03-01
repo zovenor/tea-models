@@ -196,7 +196,7 @@ func (lim *ListItemsModel) View() string {
 	groupsItems := sortByGroup(items)
 
 	for _, groupItems := range groupsItems {
-		for _, item := range groupItems {
+		for i, item := range groupItems {
 
 			if lim.cursor == item.index {
 				s += lim.cursorSymbol + " "
@@ -212,7 +212,7 @@ func (lim *ListItemsModel) View() string {
 				}
 			}
 			if lim.indexes {
-				s += fmt.Sprintf("%v) ", item.index+1)
+				s += fmt.Sprintf("%v) ", i+1)
 			}
 			s += fmt.Sprintf("%v", item.lim.name)
 			if item.lim.group != "" {
@@ -220,6 +220,7 @@ func (lim *ListItemsModel) View() string {
 			}
 			s += "\n"
 		}
+		s += "\n"
 	}
 
 	if lim.findModel != nil {
