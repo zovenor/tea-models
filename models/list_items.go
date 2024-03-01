@@ -121,10 +121,12 @@ func (lim *ListItemsModel) GetValueByKey(key string) interface{} {
 func (lim *ListItemsModel) SetKeyValueByKey(key string, value interface{}) {
 	lim.keyValues[key] = value
 }
-func (lim *ListItemsModel) AddItem(name string, value interface{}) {
-	lim.items = append(lim.items, NewListItemModel(name, value))
+func (lim *ListItemsModel) AddItem(name string, value interface{}) *ListItemModel {
+	im := NewListItemModel(name, value)
+	lim.items = append(lim.items, im)
 	lim.filterByName(lim.findValue)
 	lim.setCursorByFindCursor()
+	return im
 }
 
 func (lim *ListItemsModel) GetItems() []*ListItemModel {
