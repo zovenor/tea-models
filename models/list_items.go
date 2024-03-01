@@ -15,8 +15,13 @@ type ItemsMsg []*ListItemModel
 type ListItemModel struct {
 	name  string
 	value interface{}
+	group string
 
 	selected bool
+}
+
+func (lim *ListItemModel) SetGroup(group string) {
+	lim.group = group
 }
 
 func (im *ListItemModel) GetName() string {
@@ -143,6 +148,26 @@ func (lim *ListItemsModel) SetStatus(status string) {
 	lim.status = status
 }
 
+type ListItemModelWithIndex struct {
+	index int
+	lim   *ListItemModel
+}
+
+func sortByGroup(items []*ListItemModelWithIndex) [][]*ListItemModelWithIndex {
+	listItemGroups := make([][]*ListItemModelWithIndex, 0)
+LimLoop:
+	for _, limWithIndex := range items {
+		for i := range listItemGroups {
+			if listItemGroups[i][0].lim.group == limWithIndex.lim.group {
+				listItemGroups[i] = append(listItemGroups[i], limWithIndex)
+				continue LimLoop
+			}
+		}
+		listItemGroups = append(listItemGroups, []*ListItemModelWithIndex{limWithIndex})
+	}
+	return listItemGroups
+}
+
 func (lim *ListItemsModel) View() string {
 	if lim.view != nil {
 		return *lim.view
@@ -155,30 +180,46 @@ func (lim *ListItemsModel) View() string {
 
 	s += fmt.Sprintf("%v\n\n", lim.name)
 
-	for _, index := range lim.getPageItemsIndexes() {
-
+	itemIndexes := lim.getPageItemsIndexes()
+	items := make([]*ListItemModelWithIndex, 0)
+	for _, index := range itemIndexes {
 		item, err := lim.getItemByIndex(index)
 		if err != nil {
 			continue
 		}
+		items = append(items,
+			&ListItemModelWithIndex{
+				index: index,
+				lim:   item,
+			})
+	}
+	groupsItems := sortByGroup(items)
 
-		if lim.cursor == index {
-			s += lim.cursorSymbol + " "
-		} else {
-			s += base.RepeatSymbol(" ", len(lim.cursorSymbol)+1)
-		}
+	for _, groupItems := range groupsItems {
+		for _, item := range groupItems {
 
-		if lim.selectMode {
-			if item.selected {
-				s += "[*] "
+			if lim.cursor == item.index {
+				s += lim.cursorSymbol + " "
 			} else {
-				s += "[ ] "
+				s += base.RepeatSymbol(" ", len(lim.cursorSymbol)+1)
 			}
+
+			if lim.selectMode {
+				if item.lim.selected {
+					s += "[*] "
+				} else {
+					s += "[ ] "
+				}
+			}
+			if lim.indexes {
+				s += fmt.Sprintf("%v) ", item.index+1)
+			}
+			s += fmt.Sprintf("%v", item.lim.name)
+			if item.lim.group != "" {
+				s += fmt.Sprintf(" (%v)", item.lim.group)
+			}
+			s += "\n"
 		}
-		if lim.indexes {
-			s += fmt.Sprintf("%v) ", index+1)
-		}
-		s += fmt.Sprintf("%v\n", item.name)
 	}
 
 	if lim.findModel != nil {
