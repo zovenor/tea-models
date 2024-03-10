@@ -404,7 +404,9 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case base.BackKey:
 				parent, err := lim.GetParent()
 				if err != nil {
-					lim.err = err
+					if lim.errForward {
+						lim.SetError(err)
+					}
 					return lim, nil
 				}
 				return parent.Update(nil)
