@@ -2,11 +2,12 @@ package models
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 	"github.com/zovenor/tea-models/models/base"
-	"strings"
 )
 
 type ItemMsg *ListItemModel
@@ -54,6 +55,7 @@ type ListItemsConf struct {
 	KeyValues      map[string]interface{}
 	CmdsF          []func(lim *ListItemsModel) tea.Cmd
 	UpdateF        *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
+	ErrForward     bool
 }
 
 func NewListItemsModel(listItemsConf ListItemsConf) (*ListItemsModel, error) {
@@ -75,6 +77,7 @@ func NewListItemsModel(listItemsConf ListItemsConf) (*ListItemsModel, error) {
 		cmdsF:          listItemsConf.CmdsF,
 		updateF:        listItemsConf.UpdateF,
 		findMode:       listItemsConf.FindMode,
+		errForward:     listItemsConf.ErrForward,
 	}
 	return lim, nil
 }
@@ -103,6 +106,7 @@ type ListItemsModel struct {
 	findCursor           int
 	maxItemsInPage       int
 	keys                 []base.Key
+	errForward           bool
 }
 
 func (lim *ListItemsModel) GetKeyValues() map[string]interface{} {
@@ -392,7 +396,9 @@ func (lim *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case tea.Model:
 					return value, nil
 				default:
-					lim.err = fmt.Errorf("can not forward to this item")
+					if lim.errForward {
+						lim.err = fmt.Errorf("can not forward to this item")
+					}
 					return lim, nil
 				}
 			case base.BackKey:
