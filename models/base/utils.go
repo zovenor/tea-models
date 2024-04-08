@@ -1,6 +1,11 @@
 package base
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func RepeatSymbol(symbol string, amount int) string {
 	var s string
@@ -43,6 +48,8 @@ func GetHints(keys ...interface{}) string {
 				d = "to cancel"
 			case ConfirmKey:
 				d = "to confirm"
+			case DeleteKey:
+				d = "to delete items"
 			}
 			if k == "" {
 				k = key
@@ -56,4 +63,12 @@ func GetHints(keys ...interface{}) string {
 	s += "\n"
 
 	return s
+}
+
+func IsForwardType(t reflect.Value) (tea.Model, bool) {
+	if model, ok := t.Interface().(tea.Model); ok {
+		return model, true
+	} else {
+		return nil, false
+	}
 }

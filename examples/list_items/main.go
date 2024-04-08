@@ -1,33 +1,71 @@
 package main
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/zovenor/tea-models/models"
-	"log"
+	"fmt"
 	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/zovenor/tea-models/models/listItems"
 )
 
+func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "w":
+			return lism, tea.Quit
+		}
+	}
+
+	return nil, nil
+}
+
 func main() {
-	items := []string{
-		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
-		"Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address", "Name", "Email", "Address",
+	uf := updateF
+	cfg := listItems.Configs{
+		Name:         "Test app",
+		SelectMode:   true,
+		MaxPageItems: 20,
+		FindMode:     true,
+		ParentPath:   "Main",
+		Parent:       nil,
+		ShowIndexes:  true,
+		DeletedMode:  true,
+		UpdateFunc:   &uf,
 	}
-	listItemsConf := models.ListItemsConf{
-		Name:           "Fields",
-		SelectMode:     false,
-		ReturnValue:    false,
-		ParentPath:     "Base model",
-		Parent:         nil,
-		MaxItemsInPage: 20,
-		Indexes:        true,
+	lism := listItems.NewListItemsModel(&cfg)
+
+	for i := 0; i < 10; i++ {
+		lim := listItems.NewListItemModel()
+		lim.SetName(fmt.Sprintf("Item %v", i+1))
+		lim.SetValue(i)
+		lism.AddItem(lim)
 	}
-	model, _ := models.NewListItemsModel(listItemsConf)
-	for _, item := range items {
-		model.AddItem(item, nil)
+	for i := 10; i < 20; i++ {
+		lim := listItems.NewListItemModel()
+		lim.SetName(fmt.Sprintf("Item %v", i+1))
+		lim.SetValue(i)
+		lim.SetGroup("needless")
+		lism.AddItem(lim)
 	}
-	p := tea.NewProgram(model)
-	if _, err := p.Run(); err != nil {
-		log.Fatalf("failed to run program: %v", err)
-		os.Exit(1)
+	for i := 20; i < 30; i++ {
+		lim := listItems.NewListItemModel()
+		lim.SetName(fmt.Sprintf("Item %v", i+1))
+		lim.SetValue(i)
+		lim.SetGroup("ok")
+		lism.AddItem(lim)
+	}
+	for i := 30; i < 41; i++ {
+		lim := listItems.NewListItemModel()
+		lim.SetName(fmt.Sprintf("Item %v", i+1))
+		lim.SetValue(i)
+		lism.AddItem(lim)
+	}
+
+	app := tea.NewProgram(lism)
+	if _, err := app.Run(); err != nil {
+		fmt.Println(err)
+		os.Exit(0)
 	}
 }

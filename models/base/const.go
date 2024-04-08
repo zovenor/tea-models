@@ -18,4 +18,5 @@ const (
 	SelectKey  = " "
 	CancelKey  = "esc"
 	ConfirmKey = "y"
+	DeleteKey  = "backspace"
 )

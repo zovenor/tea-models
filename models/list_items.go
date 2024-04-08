@@ -36,6 +36,9 @@ func (im *ListItemModel) GetName() string {
 func (im *ListItemModel) GetValue() interface{} {
 	return im.value
 }
+
+// Deprecated: NewListItemModel is deprecated and should not be used.
+// Use github.com/zovenor/tea-models/models/list_items -> NewListItemModel()
 func NewListItemModel(name string, value interface{}) *ListItemModel {
 	return &ListItemModel{
 		name:  name,
@@ -57,6 +60,9 @@ type ListItemsConf struct {
 	UpdateF        *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 	ErrForward     bool
 }
+
+// Deprecated: NewListItemsModel is deprecated and should not be used.
+// Use github.com/zovenor/tea-models/models/package list_items
 
 func NewListItemsModel(listItemsConf ListItemsConf) (*ListItemsModel, error) {
 	if listItemsConf.MaxItemsInPage < 1 {
