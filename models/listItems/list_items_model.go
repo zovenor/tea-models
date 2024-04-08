@@ -161,7 +161,7 @@ func (lism *ListItemsModel) Cursor() int {
 				newCursor = item.index
 			} else if item.index > lism.cursor {
 				if newCursor == -1 {
-					lism.cursor = item.index
+					newCursor = item.index
 				}
 				break
 			}
@@ -316,6 +316,8 @@ func (lism *ListItemsModel) View() string {
 	}
 	view += base.GetHints(allKeys...)
 
+	view += fmt.Sprintf("\n\n%v\n\n", lism.cursor)
+
 	return view
 }
 
@@ -387,7 +389,7 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	lism.Cursor()
+	lism.cursor = lism.Cursor()
 
 	return lism, nil
 }
