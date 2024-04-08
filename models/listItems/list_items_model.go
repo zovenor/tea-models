@@ -321,13 +321,6 @@ func (lism *ListItemsModel) View() string {
 
 func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
-	if lism.configs.UpdateFunc != nil {
-		model, cmd := (*lism.configs.UpdateFunc)(lism, msg)
-		if model != nil || cmd != nil {
-			return model, cmd
-		}
-	}
-
 	if lism.findModel != nil {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
@@ -345,6 +338,13 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				*lism.findModel, cmd = lism.findModel.Update(msg)
 				return lism, cmd
 			}
+		}
+	}
+
+	if lism.configs.UpdateFunc != nil {
+		model, cmd := (*lism.configs.UpdateFunc)(lism, msg)
+		if model != nil || cmd != nil {
+			return model, cmd
 		}
 	}
 
