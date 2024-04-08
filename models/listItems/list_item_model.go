@@ -39,3 +39,11 @@ func (lim *ListItemModel) GetValue() reflect.Value {
 func (lim *ListItemModel) SetValue(value interface{}) {
 	lim.value = reflect.ValueOf(value)
 }
+
+func (lim *ListItemModel) SetDeleteStatus(deleted bool) {
+	lim.deleted = deleted
+}
+
+func (lim *ListItemModel) GetDeleteStatus() bool {
+	return lim.deleted
+}
