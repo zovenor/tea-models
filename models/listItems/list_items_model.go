@@ -316,8 +316,6 @@ func (lism *ListItemsModel) View() string {
 	}
 	view += base.GetHints(allKeys...)
 
-	view += fmt.Sprintf("\n\n%v\n\n", lism.cursor)
-
 	return view
 }
 
