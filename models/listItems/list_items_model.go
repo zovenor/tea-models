@@ -295,7 +295,17 @@ func (lism *ListItemsModel) View() string {
 		view += fmt.Sprintf("\n\n%v\n\n", lism.findModel.View())
 	}
 
-	view += fmt.Sprintf("\n\nPage %v/%v\n\n", page+1, lism.AllPages())
+	view += fmt.Sprintf("\n\nPage %v/%v. All items: %v", page+1, lism.AllPages(), len(lism.Items()))
+	if lism.configs.MoreItemsLenInfo {
+		for _, gItems := range lism.groupItems() {
+			groupNameView := color.New(color.FgHiCyan).Sprintf("%v", gItems[0].group)
+			if gItems[0].group == "" {
+				groupNameView = "no group"
+			}
+			view += fmt.Sprintf(", %v from %v", len(gItems), groupNameView)
+		}
+	}
+	view += "\n\n"
 
 	allKeys := make([]interface{}, 0)
 
@@ -317,6 +327,23 @@ func (lism *ListItemsModel) View() string {
 	view += base.GetHints(allKeys...)
 
 	return view
+}
+
+func (lism *ListItemsModel) groupItems() [][]*ListItemModel {
+	groupsItems := make([][]*ListItemModel, 0)
+GroupItemsLoop:
+	for _, item := range lism.Items() {
+		for i, groupItems := range groupsItems {
+			if groupItems[0].group == item.group {
+				groupsItems[i] = append(groupsItems[i], item)
+				continue GroupItemsLoop
+			}
+		}
+		newLI := make([]*ListItemModel, 1)
+		newLI[0] = item
+		groupsItems = append(groupsItems, newLI)
+	}
+	return groupsItems
 }
 
 func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

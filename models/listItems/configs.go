@@ -10,18 +10,19 @@ import (
 const BaseMaxPageItems uint16 = 20
 
 type Configs struct {
-	Name         string
-	SelectMode   bool
-	FindMode     bool
-	ParentPath   string
-	Parent       tea.Model
-	MaxPageItems uint16
-	ShowIndexes  bool
-	MapArgs      map[string]interface{}
-	UpdateFunc   *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
-	CursorSymbol string
-	DeletedMode  bool
-	Keys         []base.Key
+	Name             string
+	SelectMode       bool
+	FindMode         bool
+	ParentPath       string
+	Parent           tea.Model
+	MaxPageItems     uint16
+	ShowIndexes      bool
+	MapArgs          map[string]interface{}
+	UpdateFunc       *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
+	CursorSymbol     string
+	DeletedMode      bool
+	Keys             []base.Key
+	MoreItemsLenInfo bool
 }
 
 func (configs *Configs) check() (warnings []error) {
