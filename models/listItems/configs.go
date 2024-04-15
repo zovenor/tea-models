@@ -23,6 +23,7 @@ type Configs struct {
 	DeletedMode      bool
 	Keys             []base.Key
 	MoreItemsLenInfo bool
+	RenameGroupsView map[string]string
 }
 
 func (configs *Configs) check() (warnings []error) {
