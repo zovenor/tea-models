@@ -300,7 +300,7 @@ func (lism *ListItemsModel) View() string {
 	}
 
 	view += fmt.Sprintf("\n\nPage %v/%v.", page+1, lism.AllPages())
-	view += lism.groupItemsString()
+	view += fmt.Sprintf(" %v", lism.groupItemsString())
 	view += "\n\n"
 
 	allKeys := make([]interface{}, 0)
@@ -344,15 +344,19 @@ GroupItemsLoop:
 
 func (lism *ListItemsModel) groupItemsString() string {
 	var view string
-	view += fmt.Sprintf("All items: %v", len(lism.Items()))
+	allItemsString := "all items"
+	if allItemsNewValue, exists := lism.configs.RenameGroupsView["$allItems"]; exists {
+		allItemsString = allItemsNewValue
+	}
+	view += fmt.Sprintf("%v-%v", color.New(color.FgHiCyan).Sprint(len(lism.Items())), allItemsString)
 	if lism.configs.MoreItemsLenInfo {
 		for _, gItems := range lism.groupItems() {
 			var groupNameView string
 			if gItems[0].group != "" {
-				groupNameView = color.New(color.FgHiCyan).Sprintf("%v", gItems[0].group)
+				groupNameView = fmt.Sprintf("%v", gItems[0].group)
 			} else {
 				if newKey, exists := lism.configs.RenameGroupsView[gItems[0].group]; exists {
-					groupNameView = color.New(color.FgHiCyan).Sprintf("%v", newKey)
+					groupNameView = fmt.Sprintf("%v", newKey)
 				}
 			}
 			if gItems[0].group == "" {
@@ -360,7 +364,7 @@ func (lism *ListItemsModel) groupItemsString() string {
 					groupNameView = "no group"
 				}
 			}
-			view += fmt.Sprintf(", %v from %v", len(gItems), groupNameView)
+			view += fmt.Sprintf(", %v-%v", color.New(color.FgHiCyan).Sprint(len(gItems)), groupNameView)
 		}
 	}
 	return view
