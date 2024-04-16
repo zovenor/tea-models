@@ -30,6 +30,13 @@ func NewListItemsModel(configs *Configs) *ListItemsModel {
 	}
 	return lism
 }
+func (lism *ListItemsModel) SetMapValue(key string, value string) {
+	lism.configs.MapArgs[key] = value
+}
+
+func (lism *ListItemsModel) GetMapValue(key string) interface{} {
+	return lism.configs.MapArgs[key]
+}
 
 func (lism *ListItemsModel) AddItem(lim *ListItemModel) {
 	lism.items = append(lism.items, lim)
