@@ -367,6 +367,9 @@ func (lism *ListItemsModel) groupItemsString() string {
 				}
 			}
 			if gItems[0].group == "" {
+				if !lism.configs.GroupsView {
+					continue
+				}
 				if _, exists := lism.configs.RenameGroupsView[gItems[0].group]; !exists {
 					groupNameView = "no group"
 				}

@@ -24,6 +24,7 @@ type Configs struct {
 	Keys             []base.Key
 	MoreItemsLenInfo bool
 	RenameGroupsView map[string]string
+	GroupsView       bool
 }
 
 func (configs *Configs) check() (warnings []error) {
