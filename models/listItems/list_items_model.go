@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
+
 	"github.com/zovenor/tea-models/models"
 	"github.com/zovenor/tea-models/models/base"
 )
@@ -30,6 +31,7 @@ func NewListItemsModel(configs *Configs) *ListItemsModel {
 	}
 	return lism
 }
+
 func (lism *ListItemsModel) SetMapValue(key string, value string) {
 	lism.configs.MapArgs[key] = value
 }
@@ -355,7 +357,11 @@ func (lism *ListItemsModel) groupItemsString() string {
 	if allItemsNewValue, exists := lism.configs.RenameGroupsView["$allItems"]; exists {
 		allItemsString = allItemsNewValue
 	}
-	view += fmt.Sprintf("%v-%v", color.New(color.FgHiCyan).Sprint(len(lism.Items())), allItemsString)
+	view += fmt.Sprintf(
+		"%v-%v",
+		color.New(color.FgHiCyan).Sprint(len(lism.Items())),
+		allItemsString,
+	)
 	if lism.configs.MoreItemsLenInfo {
 		for _, gItems := range lism.groupItems() {
 			var groupNameView string
@@ -374,14 +380,17 @@ func (lism *ListItemsModel) groupItemsString() string {
 					groupNameView = "no group"
 				}
 			}
-			view += fmt.Sprintf(", %v-%v", color.New(color.FgHiCyan).Sprint(len(gItems)), groupNameView)
+			view += fmt.Sprintf(
+				", %v-%v",
+				color.New(color.FgHiCyan).Sprint(len(gItems)),
+				groupNameView,
+			)
 		}
 	}
 	return view
 }
 
 func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	if lism.findModel != nil {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
@@ -418,13 +427,13 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if lism.configs.Parent != nil {
 				return lism.configs.Parent, nil
 			}
-		case base.ForwardKey:
+		case base.ForwardKey, base.ForwardKeyVim:
 			if model, ok := base.IsForwardType(lism.CurrentItem().GetValue()); ok {
 				return model, nil
 			}
-		case base.DownKey:
+		case base.DownKey, base.DownKeyVim:
 			lism.nextCursor()
-		case base.UpKey:
+		case base.UpKey, base.UpKeyVim:
 			lism.lastCursor()
 		case base.SelectKey:
 			ci := lism.CurrentItem()
