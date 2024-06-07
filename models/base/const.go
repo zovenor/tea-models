@@ -20,3 +20,10 @@ const (
 	ConfirmKey = "y"
 	DeleteKey  = "backspace"
 )
+const (
+	UpKeyVim      = "k"
+	DownKeyVim    = "j"
+	ForwardKeyVim = "l"
+	BackKeyVim    = "h"
+	OpenKeyVim    = "o"
+)
