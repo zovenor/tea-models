@@ -15,21 +15,31 @@ import (
 type ListItemsModel struct {
 	configs *Configs
 
-	items     []*ListItemModel
-	cursor    int
-	findValue string
-	findModel *textinput.Model
+	items        []*ListItemModel
+	cursor       int
+	findValue    string
+	findModel    *textinput.Model
+	windowParams base.WindowParams
 }
 
-func NewListItemsModel(configs *Configs) *ListItemsModel {
+func NewListItemsModel(configs *Configs, opts ...func(*Configs)) (*ListItemsModel, error) {
 	if configs == nil {
 		configs = new(Configs)
 	}
-	_ = configs.check()
+	// Base opts
+	opts = append([]func(*Configs){WithBaseConfigsView}, opts...)
+	// Set opts
+	for _, opt := range opts {
+		opt(configs)
+	}
+	err := configs.check()
+	if err != nil {
+		return nil, err
+	}
 	lism := &ListItemsModel{
 		configs: configs,
 	}
-	return lism
+	return lism, nil
 }
 
 func (lism *ListItemsModel) SetMapValue(key string, value string) {
@@ -272,36 +282,8 @@ func (lism *ListItemsModel) View() string {
 	pageItems, page := lism.listItemsInPage()
 
 	for _, lim := range pageItems {
-
-		if lim.index == lism.Cursor() {
-			view += fmt.Sprintf("%v ", lism.configs.CursorSymbol)
-		} else {
-			view += base.RepeatSymbol(" ", len(lism.configs.CursorSymbol)+1)
-		}
-
-		if lism.configs.SelectMode {
-			if lim.selected {
-				view += "[*] "
-			} else {
-				view += "[ ] "
-			}
-		}
-
-		view += fmt.Sprintf("%v", lim.GetName())
-
-		if lismItem, ok := lim.value.Interface().(*ListItemsModel); ok {
-			view += fmt.Sprintf(" | %v", lismItem.groupItemsString())
-		}
-
-		if lim.group != "" {
-			view += color.New(color.FgHiCyan).Sprintf(" (%v)", lim.group)
-		}
-
-		if lim.deleted {
-			view += color.New(color.FgRed).Sprint(" (deleted)")
-		}
-
-		view += "\n"
+		active := lim.index == lism.Cursor()
+		view += lism.Configs().ConfigsViewTheme.ItemView(lim, active, lism.windowParams)
 	}
 
 	if lism.findModel != nil {
@@ -391,6 +373,14 @@ func (lism *ListItemsModel) groupItemsString() string {
 }
 
 func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Set window size
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		lism.windowParams = base.WindowParams{
+			Width:  uint64(msg.Width),
+			Height: uint64(msg.Height),
+		}
+	}
 	if lism.findModel != nil {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
@@ -433,7 +423,7 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case base.DownKey, base.DownKeyVim:
 			lism.nextCursor()
-		case base.UpKey, base.UpKeyVim:
+		case base.BaseKeyMappging.Up.HotKeys[0]:
 			lism.lastCursor()
 		case base.SelectKey:
 			ci := lism.CurrentItem()

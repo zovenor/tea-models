@@ -47,3 +47,11 @@ func (lim *ListItemModel) SetDeleteStatus(deleted bool) {
 func (lim *ListItemModel) GetDeleteStatus() bool {
 	return lim.deleted
 }
+
+func (lim *ListItemModel) GetSelected() (selected bool) {
+	return lim.selected
+}
+
+func (lim *ListItemModel) SetSelected(selected bool) {
+	lim.selected = selected
+}

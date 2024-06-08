@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+
 	"github.com/zovenor/tea-models/models/listItems"
 )
 
 func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -34,7 +35,10 @@ func main() {
 		DeletedMode:  true,
 		UpdateFunc:   &uf,
 	}
-	lism := listItems.NewListItemsModel(&cfg)
+	lism, err := listItems.NewListItemsModel(&cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for i := 0; i < 10; i++ {
 		lim := listItems.NewListItemModel()
