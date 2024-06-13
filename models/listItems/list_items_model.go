@@ -8,8 +8,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/fatih/color"
 
-	"github.com/zovenor/tea-models/models"
 	"github.com/zovenor/tea-models/models/base"
+	"github.com/zovenor/tea-models/models/confirm"
 )
 
 type ListItemsModel struct {
@@ -294,24 +294,21 @@ func (lism *ListItemsModel) View() string {
 	view += fmt.Sprintf(" %v", lism.groupItemsString())
 	view += "\n\n"
 
-	allKeys := make([]interface{}, 0)
+	allKeys := make([]base.KeyType, 0)
 
 	if lism.findValue != "" {
 		if lism.findModel == nil {
-			allKeys = append(allKeys, base.FindKey)
+			allKeys = append(allKeys, base.FindKeyType)
 		} else {
-			allKeys = append(allKeys, base.CancelKey, base.EnterKey)
+			allKeys = append(allKeys, base.CancelKeyType, base.EnterKeyType)
 		}
 	}
 	if lism.configs.SelectMode {
-		allKeys = append(allKeys, base.SelectKey, base.DeleteKey)
+		allKeys = append(allKeys, base.SelectKeyType, base.DeleteKeyType)
 	}
 
-	allKeys = append(allKeys, base.ExitKey)
-	for _, k := range lism.configs.Keys {
-		allKeys = append(allKeys, k)
-	}
-	view += base.GetHints(allKeys...)
+	allKeys = append(allKeys, base.ExitKeyType)
+	view += lism.configs.ActionKeys.GetBaseHints(allKeys...)
 
 	return view
 }
@@ -384,14 +381,14 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if lism.findModel != nil {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
-			switch msg.String() {
-			case base.EnterKey:
+			switch lism.configs.ActionKeys.GetKeyTypeByHotKeyString(msg.String()) {
+			case base.EnterKeyType:
 				lism.findValue = lism.findModel.Value()
 				lism.findModel = nil
 				lism.setItemList()
-			case base.CancelKey:
+			case base.CancelKeyType:
 				lism.findModel = nil
-			case base.ExitKey:
+			case base.ExitKeyType:
 				return lism, tea.Quit
 			default:
 				var cmd tea.Cmd
@@ -410,39 +407,39 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case base.ExitKey:
+		switch lism.configs.ActionKeys.GetKeyTypeByHotKeyString(msg.String()) {
+		case base.ExitKeyType:
 			return lism, tea.Quit
-		case base.BackKey:
+		case base.BackKeyType:
 			if lism.configs.Parent != nil {
 				return lism.configs.Parent, nil
 			}
-		case base.ForwardKey, base.ForwardKeyVim:
+		case base.ForwardKeyType:
 			if model, ok := base.IsForwardType(lism.CurrentItem().GetValue()); ok {
 				return model, nil
 			}
-		case base.DownKey, base.DownKeyVim:
+		case base.DownKeyType:
 			lism.nextCursor()
-		case base.BaseKeyMappging.Up.HotKeys[0]:
+		case base.UpKeyType:
 			lism.lastCursor()
-		case base.SelectKey:
+		case base.SelectKeyType:
 			ci := lism.CurrentItem()
 			ci.selected = !ci.selected
-		case base.DeleteKey:
-			confirmModel, err := models.NewConfirmModel("Do you want to delete selected items?", lism, lism.deleteSelectedItems)
+		case base.DeleteKeyType:
+			confirmModel, err := confirm.NewConfirmModel("Do you want to delete selected items?", lism, lism.deleteSelectedItems)
 			if err == nil {
 				return confirmModel, nil
 			}
-		case base.FindKey:
+		case base.FindKeyType:
 			ti := textinput.New()
 			ti.Placeholder = lism.findValue
 			ti.SetValue(lism.findValue)
 			ti.Focus()
 			lism.findModel = &ti
 			return lism, nil
-		case "]":
+		case base.NextPageKeyType:
 			lism.nextPage()
-		case "[":
+		case base.PreviousPageKeyType:
 			lism.lastPage()
 		}
 	}

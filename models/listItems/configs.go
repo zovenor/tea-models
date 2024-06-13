@@ -22,11 +22,11 @@ type Configs struct {
 	UpdateFunc       *func(*ListItemsModel, tea.Msg) (tea.Model, tea.Cmd)
 	CursorSymbol     string
 	DeletedMode      bool
-	Keys             []base.Key
 	MoreItemsLenInfo bool
 	RenameGroupsView map[string]string
 	GroupsView       bool
 	ConfigsViewTheme ConfigsViewTheme
+	ActionKeys       base.ActionKeys
 }
 
 func (configs *Configs) check() (warnings error) {
@@ -38,13 +38,17 @@ func (configs *Configs) check() (warnings error) {
 	}
 	return warnings
 }
+func WithBaseKeys(cfg *Configs) {
+	baseKeys := base.GetBaseKeys()
+	cfg.ActionKeys = baseKeys
+}
 
 // Configs view theme
 
 type ConfigsViewTheme interface {
 	Title(path []string, wp base.WindowParams) string
 	ItemView(lism *ListItemModel, active bool, wp base.WindowParams) string
-	Footer(page, allPages uint64, itemsGroups map[string]uint64, wp base.WindowParams) string
+	Footer(page, allPages uint64, itemsGroups map[string]uint64, findingValue *string, wp base.WindowParams) string
 }
 
 // Base configs view handler
@@ -94,6 +98,7 @@ func (cvh *ConfigsViewHandler) ItemView(
 func (cvh *ConfigsViewHandler) Footer(
 	page, allPages uint64,
 	itemsGroups map[string]uint64,
+	findingValue *string,
 	wp base.WindowParams,
 ) string {
 	var s string
@@ -102,5 +107,8 @@ func (cvh *ConfigsViewHandler) Footer(
 		s += fmt.Sprintf(" %v-%v", groupItems, groupName)
 	}
 	s += "/n/n"
+	if findingValue != nil {
+		s += fmt.Sprintf("Find: %v", findingValue)
+	}
 	return s
 }

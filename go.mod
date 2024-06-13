@@ -1,11 +1,14 @@
 module github.com/zovenor/tea-models
 
-go 1.21.4
+go 1.22
+
+toolchain go1.22.2
 
 require (
 	github.com/charmbracelet/bubbles v0.17.1
 	github.com/charmbracelet/bubbletea v0.25.0
 	github.com/fatih/color v1.16.0
+	github.com/zovenor/logging/v2 v2.0.2
 )
 
 require (

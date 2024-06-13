@@ -14,7 +14,7 @@ func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "w":
+		case "q":
 			return lism, tea.Quit
 		}
 	}
@@ -35,7 +35,7 @@ func main() {
 		DeletedMode:  true,
 		UpdateFunc:   &uf,
 	}
-	lism, err := listItems.NewListItemsModel(&cfg)
+	lism, err := listItems.NewListItemsModel(&cfg, listItems.WithBaseKeys)
 	if err != nil {
 		log.Fatal(err)
 	}

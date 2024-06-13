@@ -1,28 +1,33 @@
 package main
 
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/zovenor/tea-models/models"
 	"log"
 	"os"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/zovenor/tea-models/models/confirm"
+	"github.com/zovenor/tea-models/models/listItems"
 )
 
 func main() {
-	listModel, _ := models.NewListItemsModel(models.ListItemsConf{
-		Name:           "Fields",
-		SelectMode:     false,
-		ReturnValue:    false,
-		ParentPath:     "Base model",
-		Parent:         nil,
-		MaxItemsInPage: 20,
-		Indexes:        false,
+	listModel, _ := listItems.NewListItemsModel(&listItems.Configs{
+		Name:       "Fields",
+		SelectMode: false,
+		ParentPath: "Base model",
+		Parent:     nil,
 	})
-	confirmModel, _ := models.NewConfirmModel(
+	confirmModel, _ := confirm.NewConfirmModel(
 		"Do you want to do something?\n",
 		listModel, func() {
-			listModel.AddItem("Test field", "Value")
+			lim := listItems.NewListItemModel()
+			lim.SetName("Test field")
+			lim.SetValue("Value")
+			listModel.AddItem(lim)
 		})
-	listModel.AddItem("Confirm field", confirmModel)
+	lim := listItems.NewListItemModel()
+	lim.SetName("Confirm field")
+	lim.SetValue(confirmModel)
+	listModel.AddItem(lim)
 	p := tea.NewProgram(listModel)
 	if _, err := p.Run(); err != nil {
 		log.Fatalf("failed to run program: %v", err)
