@@ -2,6 +2,7 @@ package listItems
 
 import (
 	"fmt"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 
@@ -14,7 +15,7 @@ type Configs struct {
 	Name             string
 	SelectMode       bool
 	FindMode         bool
-	ParentPath       string
+	ParentPath       []string
 	Parent           tea.Model
 	MaxPageItems     uint16
 	ShowIndexes      bool
@@ -62,12 +63,7 @@ type ConfigsViewHandler struct{}
 
 func (cvh *ConfigsViewHandler) Title(path []string, wp base.WindowParams) string {
 	var s string
-	for i, name := range path {
-		if i != 0 {
-			s += " > "
-		}
-		s += name
-	}
+	s += strings.Join(path, " ► ")
 	s += "\n\n"
 	return s
 }
@@ -78,7 +74,7 @@ func (cvh *ConfigsViewHandler) ItemView(
 ) string {
 	var s string
 	if active {
-		s += "> "
+		s += "► "
 	} else {
 		s += "  "
 	}
@@ -101,14 +97,14 @@ func (cvh *ConfigsViewHandler) Footer(
 	findingValue *string,
 	wp base.WindowParams,
 ) string {
-	var s string
+	var s string = "\n"
 	s += fmt.Sprintf("Page %v/%v.", page, allPages)
 	for groupName, groupItems := range itemsGroups {
 		s += fmt.Sprintf(" %v-%v", groupItems, groupName)
 	}
-	s += "/n/n"
+	s += "\n\n"
 	if findingValue != nil {
-		s += fmt.Sprintf("Find: %v", findingValue)
+		s += fmt.Sprintf("Find: %v", *findingValue)
 	}
 	return s
 }

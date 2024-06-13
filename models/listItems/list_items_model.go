@@ -6,7 +6,6 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/fatih/color"
 
 	"github.com/zovenor/tea-models/models/base"
 	"github.com/zovenor/tea-models/models/confirm"
@@ -96,10 +95,6 @@ func (lism *ListItemsModel) setItemList() {
 
 func (lism *ListItemsModel) Configs() *Configs {
 	return lism.configs
-}
-
-func (lism *ListItemsModel) Path() string {
-	return fmt.Sprintf("%v > %v", lism.configs.ParentPath, lism.configs.Name)
 }
 
 func (lism *ListItemsModel) Items() []*ListItemModel {
@@ -277,43 +272,34 @@ func (lism *ListItemsModel) AllPages() int {
 }
 
 func (lism *ListItemsModel) View() string {
-	var view string = fmt.Sprintf("%v\n\n", lism.Path())
+	allPath := make([]string, 0, len(lism.configs.ParentPath)+1)
+	allPath = append(allPath, lism.configs.ParentPath...)
+	allPath = append(allPath, lism.configs.Name)
 
+	var view = lism.configs.ConfigsViewTheme.Title(allPath, lism.windowParams)
 	pageItems, page := lism.listItemsInPage()
 
 	for _, lim := range pageItems {
 		active := lim.index == lism.Cursor()
 		view += lism.Configs().ConfigsViewTheme.ItemView(lim, active, lism.windowParams)
 	}
-
+	var findValue *string
 	if lism.findModel != nil {
-		view += fmt.Sprintf("\n\n%v\n\n", lism.findModel.View())
+		fv := lism.findModel.Value()
+		findValue = &fv
 	}
-
-	view += fmt.Sprintf("\n\nPage %v/%v.", page+1, lism.AllPages())
-	view += fmt.Sprintf(" %v", lism.groupItemsString())
-	view += "\n\n"
-
-	allKeys := make([]base.KeyType, 0)
-
-	if lism.findValue != "" {
-		if lism.findModel == nil {
-			allKeys = append(allKeys, base.FindKeyType)
-		} else {
-			allKeys = append(allKeys, base.CancelKeyType, base.EnterKeyType)
-		}
-	}
-	if lism.configs.SelectMode {
-		allKeys = append(allKeys, base.SelectKeyType, base.DeleteKeyType)
-	}
-
-	allKeys = append(allKeys, base.ExitKeyType)
-	view += lism.configs.ActionKeys.GetBaseHints(allKeys...)
+	view += lism.configs.ConfigsViewTheme.Footer(
+		uint64(page),
+		uint64(lism.AllPages()),
+		lism.groupItems(),
+		findValue,
+		lism.windowParams,
+	)
 
 	return view
 }
 
-func (lism *ListItemsModel) groupItems() [][]*ListItemModel {
+func (lism *ListItemsModel) groupItemsList() [][]*ListItemModel {
 	groupsItems := make([][]*ListItemModel, 0)
 GroupItemsLoop:
 	for _, item := range lism.Items() {
@@ -330,19 +316,16 @@ GroupItemsLoop:
 	return groupsItems
 }
 
-func (lism *ListItemsModel) groupItemsString() string {
-	var view string
+func (lism *ListItemsModel) groupItems() map[string]uint64 {
+	items := make(map[string]uint64)
 	allItemsString := "all items"
 	if allItemsNewValue, exists := lism.configs.RenameGroupsView["$allItems"]; exists {
 		allItemsString = allItemsNewValue
 	}
-	view += fmt.Sprintf(
-		"%v-%v",
-		color.New(color.FgHiCyan).Sprint(len(lism.Items())),
-		allItemsString,
-	)
+
+	items[allItemsString] = uint64(len(lism.Items()))
 	if lism.configs.MoreItemsLenInfo {
-		for _, gItems := range lism.groupItems() {
+		for _, gItems := range lism.groupItemsList() {
 			var groupNameView string
 			if gItems[0].group != "" {
 				groupNameView = fmt.Sprintf("%v", gItems[0].group)
@@ -359,14 +342,10 @@ func (lism *ListItemsModel) groupItemsString() string {
 					groupNameView = "no group"
 				}
 			}
-			view += fmt.Sprintf(
-				", %v-%v",
-				color.New(color.FgHiCyan).Sprint(len(gItems)),
-				groupNameView,
-			)
+			items[groupNameView] = uint64(len(gItems))
 		}
 	}
-	return view
+	return items
 }
 
 func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

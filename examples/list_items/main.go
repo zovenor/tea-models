@@ -25,15 +25,16 @@ func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
 func main() {
 	uf := updateF
 	cfg := listItems.Configs{
-		Name:         "Test app",
-		SelectMode:   true,
-		MaxPageItems: 20,
-		FindMode:     true,
-		ParentPath:   "Main",
-		Parent:       nil,
-		ShowIndexes:  true,
-		DeletedMode:  true,
-		UpdateFunc:   &uf,
+		Name:             "Test app",
+		SelectMode:       true,
+		MaxPageItems:     20,
+		FindMode:         true,
+		ParentPath:       []string{"Main"},
+		Parent:           nil,
+		ShowIndexes:      true,
+		DeletedMode:      true,
+		UpdateFunc:       &uf,
+		MoreItemsLenInfo: true,
 	}
 	lism, err := listItems.NewListItemsModel(&cfg, listItems.WithBaseKeys)
 	if err != nil {
