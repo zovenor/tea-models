@@ -39,6 +39,7 @@ func (configs *Configs) check() (warnings error) {
 	}
 	return warnings
 }
+
 func WithBaseKeys(cfg *Configs) {
 	baseKeys := base.GetBaseKeys()
 	cfg.ActionKeys = baseKeys
@@ -49,7 +50,7 @@ func WithBaseKeys(cfg *Configs) {
 type ConfigsViewTheme interface {
 	Title(path []string, wp base.WindowParams) string
 	ItemView(lism *ListItemModel, active bool, wp base.WindowParams) string
-	Footer(page, allPages uint64, itemsGroups map[string]uint64, findingValue *string, wp base.WindowParams) string
+	Footer(page, allPages uint64, itemsGroups []ItemsGroup, findingValue *string, wp base.WindowParams) string
 }
 
 // Base configs view handler
@@ -91,16 +92,21 @@ func (cvh *ConfigsViewHandler) ItemView(
 	return s
 }
 
+type ItemsGroup struct {
+	Name  string
+	Total uint64
+}
+
 func (cvh *ConfigsViewHandler) Footer(
 	page, allPages uint64,
-	itemsGroups map[string]uint64,
+	itemsGroups []ItemsGroup,
 	findingValue *string,
 	wp base.WindowParams,
 ) string {
 	var s string = "\n"
 	s += fmt.Sprintf("Page %v/%v.", page, allPages)
-	for groupName, groupItems := range itemsGroups {
-		s += fmt.Sprintf(" %v-%v", groupItems, groupName)
+	for _, groupItems := range itemsGroups {
+		s += fmt.Sprintf(" %v-%v", groupItems.Total, groupItems.Name)
 	}
 	s += "\n\n"
 	if findingValue != nil {

@@ -276,7 +276,7 @@ func (lism *ListItemsModel) View() string {
 	allPath = append(allPath, lism.configs.ParentPath...)
 	allPath = append(allPath, lism.configs.Name)
 
-	var view = lism.configs.ConfigsViewTheme.Title(allPath, lism.windowParams)
+	view := lism.configs.ConfigsViewTheme.Title(allPath, lism.windowParams)
 	pageItems, page := lism.listItemsInPage()
 
 	for _, lim := range pageItems {
@@ -316,14 +316,17 @@ GroupItemsLoop:
 	return groupsItems
 }
 
-func (lism *ListItemsModel) groupItems() map[string]uint64 {
-	items := make(map[string]uint64)
+func (lism *ListItemsModel) groupItems() []ItemsGroup {
+	items := make([]ItemsGroup, 0)
 	allItemsString := "all items"
 	if allItemsNewValue, exists := lism.configs.RenameGroupsView["$allItems"]; exists {
 		allItemsString = allItemsNewValue
 	}
 
-	items[allItemsString] = uint64(len(lism.Items()))
+	items = append(items, ItemsGroup{
+		Name:  allItemsString,
+		Total: uint64(len(lism.Items())),
+	})
 	if lism.configs.MoreItemsLenInfo {
 		for _, gItems := range lism.groupItemsList() {
 			var groupNameView string
@@ -342,7 +345,10 @@ func (lism *ListItemsModel) groupItems() map[string]uint64 {
 					groupNameView = "no group"
 				}
 			}
-			items[groupNameView] = uint64(len(gItems))
+			items = append(items, ItemsGroup{
+				Name:  groupNameView,
+				Total: uint64(len(gItems)),
+			})
 		}
 	}
 	return items

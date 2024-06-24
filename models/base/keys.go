@@ -40,6 +40,7 @@ type HotKey string
 func NewHotKey(key string, view string) HotKey {
 	return HotKey(fmt.Sprintf("%v::%v", key, view))
 }
+
 func (hk HotKey) Key() string {
 	items := strings.Split(string(hk), "::")
 	if len(items) == 0 {
@@ -78,6 +79,7 @@ func (aks ActionKeys) AddHotKey(hotKey HotKey, kt KeyType) error {
 	}
 	return fmt.Errorf("can not find action key with key type: %v", kt)
 }
+
 func (aks ActionKeys) GetActionKeyByKeyType(kt KeyType) (ActionKey, error) {
 	for _, ak := range aks {
 		if ak.KeyType == kt {
@@ -86,6 +88,7 @@ func (aks ActionKeys) GetActionKeyByKeyType(kt KeyType) (ActionKey, error) {
 	}
 	return ActionKey{}, errors.New("can not find action key with key type: " + string(kt))
 }
+
 func (aks ActionKeys) GetActionKeyByHotKeyString(hotKey string) (ActionKey, error) {
 	for _, ak := range aks {
 		for _, hk := range ak.HotKeys {
@@ -96,6 +99,7 @@ func (aks ActionKeys) GetActionKeyByHotKeyString(hotKey string) (ActionKey, erro
 	}
 	return ActionKey{}, errors.New("can not find action key with hotkey: " + hotKey)
 }
+
 func (aks ActionKeys) GetKeyTypeByHotKeyString(hotKey string) KeyType {
 	for _, ak := range aks {
 		for _, hk := range ak.HotKeys {
@@ -106,6 +110,11 @@ func (aks ActionKeys) GetKeyTypeByHotKeyString(hotKey string) KeyType {
 	}
 	return UnknownKeyType
 }
+
+func (aks ActionKeys) Clear() {
+	clear(aks)
+}
+
 func GetBaseKeys() ActionKeys {
 	aks := ActionKeys{}
 	aks.AddActionKey("to go up", UpKeyType, "up")

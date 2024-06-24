@@ -7,6 +7,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/zovenor/logging/v2/prettyPrints"
 	"github.com/zovenor/tea-models/models/listItems"
 )
 
@@ -23,6 +24,7 @@ func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func main() {
+	prettyPrints.ClearTerminal()
 	uf := updateF
 	cfg := listItems.Configs{
 		Name:             "Test app",
