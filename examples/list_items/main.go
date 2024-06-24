@@ -2,18 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
+
+	"github.com/zovenor/logging/v2/prettyPrints"
 	"github.com/zovenor/tea-models/models/listItems"
 )
 
 func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "w":
+		case "q":
 			return lism, tea.Quit
 		}
 	}
@@ -22,19 +24,24 @@ func updateF(lism *listItems.ListItemsModel, msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func main() {
+	prettyPrints.ClearTerminal()
 	uf := updateF
 	cfg := listItems.Configs{
-		Name:         "Test app",
-		SelectMode:   true,
-		MaxPageItems: 20,
-		FindMode:     true,
-		ParentPath:   "Main",
-		Parent:       nil,
-		ShowIndexes:  true,
-		DeletedMode:  true,
-		UpdateFunc:   &uf,
+		Name:             "Test app",
+		SelectMode:       true,
+		MaxPageItems:     20,
+		FindMode:         true,
+		ParentPath:       []string{"Main"},
+		Parent:           nil,
+		ShowIndexes:      true,
+		DeletedMode:      true,
+		UpdateFunc:       &uf,
+		MoreItemsLenInfo: true,
 	}
-	lism := listItems.NewListItemsModel(&cfg)
+	lism, err := listItems.NewListItemsModel(&cfg, listItems.WithBaseKeys)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for i := 0; i < 10; i++ {
 		lim := listItems.NewListItemModel()

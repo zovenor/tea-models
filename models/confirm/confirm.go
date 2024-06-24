@@ -1,7 +1,8 @@
-package models
+package confirm
 
 import (
 	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/zovenor/tea-models/models/base"
 )
@@ -10,6 +11,7 @@ type ConfirmModel struct {
 	description string
 	f           func()
 	parent      tea.Model
+	actionKeys  base.ActionKeys
 }
 
 func (c *ConfirmModel) GetDescription() string { return c.description }
@@ -24,6 +26,9 @@ func NewConfirmModel(description string, parent tea.Model, f func()) (*ConfirmMo
 		f:           f,
 	}, nil
 }
+func (c *ConfirmModel) SetActionKeys(keys base.ActionKeys) {
+	c.actionKeys = keys
+}
 
 func (c *ConfirmModel) Init() tea.Cmd { return nil }
 
@@ -32,21 +37,20 @@ func (c *ConfirmModel) View() string {
 
 	s += c.description
 
-	s += base.GetHints(base.ExitKey, base.ConfirmKey, base.CancelKey)
-
+	s += c.actionKeys.GetBaseHints(base.ExitKeyType, base.ConfirmKeyType, base.CancelKeyType)
 	return s
 }
 
 func (c *ConfirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case base.ExitKey:
+		switch c.actionKeys.GetKeyTypeByHotKeyString(msg.String()) {
+		case base.ExitKeyType:
 			return c, tea.Quit
-		case base.ConfirmKey:
+		case base.ConfirmKeyType:
 			c.f()
 			return c.parent, nil
-		case base.CancelKey:
+		case base.CancelKeyType:
 			return c.parent, nil
 		}
 	}

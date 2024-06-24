@@ -6,30 +6,39 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/fatih/color"
 
-	"github.com/zovenor/tea-models/models"
 	"github.com/zovenor/tea-models/models/base"
+	"github.com/zovenor/tea-models/models/confirm"
 )
 
 type ListItemsModel struct {
 	configs *Configs
 
-	items     []*ListItemModel
-	cursor    int
-	findValue string
-	findModel *textinput.Model
+	items        []*ListItemModel
+	cursor       int
+	findValue    string
+	findModel    *textinput.Model
+	windowParams base.WindowParams
 }
 
-func NewListItemsModel(configs *Configs) *ListItemsModel {
+func NewListItemsModel(configs *Configs, opts ...func(*Configs)) (*ListItemsModel, error) {
 	if configs == nil {
 		configs = new(Configs)
 	}
-	_ = configs.check()
+	// Base opts
+	opts = append([]func(*Configs){WithBaseConfigsView}, opts...)
+	// Set opts
+	for _, opt := range opts {
+		opt(configs)
+	}
+	err := configs.check()
+	if err != nil {
+		return nil, err
+	}
 	lism := &ListItemsModel{
 		configs: configs,
 	}
-	return lism
+	return lism, nil
 }
 
 func (lism *ListItemsModel) SetMapValue(key string, value string) {
@@ -86,10 +95,6 @@ func (lism *ListItemsModel) setItemList() {
 
 func (lism *ListItemsModel) Configs() *Configs {
 	return lism.configs
-}
-
-func (lism *ListItemsModel) Path() string {
-	return fmt.Sprintf("%v > %v", lism.configs.ParentPath, lism.configs.Name)
 }
 
 func (lism *ListItemsModel) Items() []*ListItemModel {
@@ -267,74 +272,34 @@ func (lism *ListItemsModel) AllPages() int {
 }
 
 func (lism *ListItemsModel) View() string {
-	var view string = fmt.Sprintf("%v\n\n", lism.Path())
+	allPath := make([]string, 0, len(lism.configs.ParentPath)+1)
+	allPath = append(allPath, lism.configs.ParentPath...)
+	allPath = append(allPath, lism.configs.Name)
 
+	view := lism.configs.ConfigsViewTheme.Title(allPath, lism.windowParams)
 	pageItems, page := lism.listItemsInPage()
 
 	for _, lim := range pageItems {
-
-		if lim.index == lism.Cursor() {
-			view += fmt.Sprintf("%v ", lism.configs.CursorSymbol)
-		} else {
-			view += base.RepeatSymbol(" ", len(lism.configs.CursorSymbol)+1)
-		}
-
-		if lism.configs.SelectMode {
-			if lim.selected {
-				view += "[*] "
-			} else {
-				view += "[ ] "
-			}
-		}
-
-		view += fmt.Sprintf("%v", lim.GetName())
-
-		if lismItem, ok := lim.value.Interface().(*ListItemsModel); ok {
-			view += fmt.Sprintf(" | %v", lismItem.groupItemsString())
-		}
-
-		if lim.group != "" {
-			view += color.New(color.FgHiCyan).Sprintf(" (%v)", lim.group)
-		}
-
-		if lim.deleted {
-			view += color.New(color.FgRed).Sprint(" (deleted)")
-		}
-
-		view += "\n"
+		active := lim.index == lism.Cursor()
+		view += lism.Configs().ConfigsViewTheme.ItemView(lim, active, lism.windowParams)
 	}
-
+	var findValue *string
 	if lism.findModel != nil {
-		view += fmt.Sprintf("\n\n%v\n\n", lism.findModel.View())
+		fv := lism.findModel.Value()
+		findValue = &fv
 	}
-
-	view += fmt.Sprintf("\n\nPage %v/%v.", page+1, lism.AllPages())
-	view += fmt.Sprintf(" %v", lism.groupItemsString())
-	view += "\n\n"
-
-	allKeys := make([]interface{}, 0)
-
-	if lism.findValue != "" {
-		if lism.findModel == nil {
-			allKeys = append(allKeys, base.FindKey)
-		} else {
-			allKeys = append(allKeys, base.CancelKey, base.EnterKey)
-		}
-	}
-	if lism.configs.SelectMode {
-		allKeys = append(allKeys, base.SelectKey, base.DeleteKey)
-	}
-
-	allKeys = append(allKeys, base.ExitKey)
-	for _, k := range lism.configs.Keys {
-		allKeys = append(allKeys, k)
-	}
-	view += base.GetHints(allKeys...)
+	view += lism.configs.ConfigsViewTheme.Footer(
+		uint64(page),
+		uint64(lism.AllPages()),
+		lism.groupItems(),
+		findValue,
+		lism.windowParams,
+	)
 
 	return view
 }
 
-func (lism *ListItemsModel) groupItems() [][]*ListItemModel {
+func (lism *ListItemsModel) groupItemsList() [][]*ListItemModel {
 	groupsItems := make([][]*ListItemModel, 0)
 GroupItemsLoop:
 	for _, item := range lism.Items() {
@@ -351,19 +316,19 @@ GroupItemsLoop:
 	return groupsItems
 }
 
-func (lism *ListItemsModel) groupItemsString() string {
-	var view string
+func (lism *ListItemsModel) groupItems() []ItemsGroup {
+	items := make([]ItemsGroup, 0)
 	allItemsString := "all items"
 	if allItemsNewValue, exists := lism.configs.RenameGroupsView["$allItems"]; exists {
 		allItemsString = allItemsNewValue
 	}
-	view += fmt.Sprintf(
-		"%v-%v",
-		color.New(color.FgHiCyan).Sprint(len(lism.Items())),
-		allItemsString,
-	)
+
+	items = append(items, ItemsGroup{
+		Name:  allItemsString,
+		Total: uint64(len(lism.Items())),
+	})
 	if lism.configs.MoreItemsLenInfo {
-		for _, gItems := range lism.groupItems() {
+		for _, gItems := range lism.groupItemsList() {
 			var groupNameView string
 			if gItems[0].group != "" {
 				groupNameView = fmt.Sprintf("%v", gItems[0].group)
@@ -380,28 +345,35 @@ func (lism *ListItemsModel) groupItemsString() string {
 					groupNameView = "no group"
 				}
 			}
-			view += fmt.Sprintf(
-				", %v-%v",
-				color.New(color.FgHiCyan).Sprint(len(gItems)),
-				groupNameView,
-			)
+			items = append(items, ItemsGroup{
+				Name:  groupNameView,
+				Total: uint64(len(gItems)),
+			})
 		}
 	}
-	return view
+	return items
 }
 
 func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Set window size
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		lism.windowParams = base.WindowParams{
+			Width:  uint64(msg.Width),
+			Height: uint64(msg.Height),
+		}
+	}
 	if lism.findModel != nil {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
-			switch msg.String() {
-			case base.EnterKey:
+			switch lism.configs.ActionKeys.GetKeyTypeByHotKeyString(msg.String()) {
+			case base.EnterKeyType:
 				lism.findValue = lism.findModel.Value()
 				lism.findModel = nil
 				lism.setItemList()
-			case base.CancelKey:
+			case base.CancelKeyType:
 				lism.findModel = nil
-			case base.ExitKey:
+			case base.ExitKeyType:
 				return lism, tea.Quit
 			default:
 				var cmd tea.Cmd
@@ -420,39 +392,39 @@ func (lism *ListItemsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case base.ExitKey:
+		switch lism.configs.ActionKeys.GetKeyTypeByHotKeyString(msg.String()) {
+		case base.ExitKeyType:
 			return lism, tea.Quit
-		case base.BackKey:
+		case base.BackKeyType:
 			if lism.configs.Parent != nil {
 				return lism.configs.Parent, nil
 			}
-		case base.ForwardKey, base.ForwardKeyVim:
+		case base.ForwardKeyType:
 			if model, ok := base.IsForwardType(lism.CurrentItem().GetValue()); ok {
 				return model, nil
 			}
-		case base.DownKey, base.DownKeyVim:
+		case base.DownKeyType:
 			lism.nextCursor()
-		case base.UpKey, base.UpKeyVim:
+		case base.UpKeyType:
 			lism.lastCursor()
-		case base.SelectKey:
+		case base.SelectKeyType:
 			ci := lism.CurrentItem()
 			ci.selected = !ci.selected
-		case base.DeleteKey:
-			confirmModel, err := models.NewConfirmModel("Do you want to delete selected items?", lism, lism.deleteSelectedItems)
+		case base.DeleteKeyType:
+			confirmModel, err := confirm.NewConfirmModel("Do you want to delete selected items?", lism, lism.deleteSelectedItems)
 			if err == nil {
 				return confirmModel, nil
 			}
-		case base.FindKey:
+		case base.FindKeyType:
 			ti := textinput.New()
 			ti.Placeholder = lism.findValue
 			ti.SetValue(lism.findValue)
 			ti.Focus()
 			lism.findModel = &ti
 			return lism, nil
-		case "]":
+		case base.NextPageKeyType:
 			lism.nextPage()
-		case "[":
+		case base.PreviousPageKeyType:
 			lism.lastPage()
 		}
 	}
